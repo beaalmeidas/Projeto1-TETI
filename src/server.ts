@@ -1,6 +1,7 @@
 import express from "express";
 import { Express, Request, Response }  from "express";      // importando tipos do Express
 import swaggerUi from "swagger-ui-express";
+import router from "./routes/index";
 
 
 const swaggerJsDoc = require("swagger-jsdoc");
