@@ -3,9 +3,9 @@ import bcrypt from "bcryptjs";
 import { ServiceError } from "../utils/serviceError";
 
 
-export const userService = {
+export const usuarioService = {
 
-    async createUser(
+    async createUsuario(
         primeiroNome: string,
         ultimoSobrenome: string,
         email: string,
@@ -37,6 +37,7 @@ export const userService = {
             throw new ServiceError("Erro ao criptografar a senha do usuário.", 500);
         }
 
+        // passando os dados para a criação do usuário no banco
         let novoUsuario;
         try {
             novoUsuario = await prisma.usuario.create({
@@ -52,6 +53,86 @@ export const userService = {
             throw new ServiceError("Erro ao cadastrar usuário.", 500);
         }
 
-        return novoUsuario;
+        return {
+            message: "Usuário criado com sucesso.",
+            usuario: novoUsuario
+        };
+    },
+
+
+    async getAllUsuarios() {
+        const usuarios = await prisma.usuario.findMany({
+            select: {
+                id: true,           // true = campos que queremos que apareçam no resultado da busca
+                primeiroNome: true,
+                ultimoSobrenome: true,
+                email: true,
+                createdAt: true
+            }
+        });
+
+        if (usuarios.length === 0) {
+            throw new ServiceError("Nenhum usuário foi encontrado.", 404);
+        }
+
+        return usuarios;
+    },
+
+
+    async getUsuarioById(id: number) {
+        const usuarioBuscado = prisma.usuario.findUnique( { where: { id } } );
+
+        if (!usuarioBuscado) {
+            throw new ServiceError("Usuário não encontrado.", 404);
+        }
+
+        return usuarioBuscado;
+    },
+
+
+    async updateUsuario(
+        id: number,
+        data: {
+            primeiroNome?: string,
+            ultimoSobrenome?: string,
+            email?: string,
+            senha?: string
+        }
+    ) {
+        const usuarioBuscado = prisma.usuario.findUnique( { where: { id } } );
+
+        if (!usuarioBuscado) {
+            throw new ServiceError("Usuário não encontrado.", 404);
+        }
+
+        if (data.senha) {
+            data.senha = await bcrypt.hash(data.senha, 10);
+        }
+
+        const usuarioAtualizado = await prisma.usuario.update({
+            where: { id },
+            data
+        });
+
+        return {
+            message: "Usuário atualizado com sucesso.",
+            usuario: usuarioAtualizado
+        };
+    },
+
+
+    async deleteUsuario(id: number) {
+        const usuarioBuscado = prisma.usuario.findUnique( { where: { id } } );
+    
+        if (!usuarioBuscado) {
+            throw new ServiceError("Usuário não encontrado.", 404);
+        }
+
+        const usuarioDeletado = await prisma.usuario.delete({ where: { id } });
+
+        return {
+            message: "Usuário deletado com sucesso.",
+            usuario: usuarioDeletado
+        };
     }
 }
