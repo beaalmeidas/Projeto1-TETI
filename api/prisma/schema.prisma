@@ -14,27 +14,60 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+
+enum Role {
+  PACIENTE
+  ADMIN
+}
+
+model Usuario {
+  id              Int           @id @default(autoincrement())
+  primeiroNome    String
+  ultimoSobrenome String
+  email           String        @unique
+  senha           String
+
+  role            Role          @default(PACIENTE)
+  paciente        Paciente?
+
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  @@map("usuarios")
+}
+
+
 model Paciente {
   id              Int           @id @default(autoincrement())
-  nome            String
   cpf             String        @unique
   dataNascimento  DateTime?
-  endereco        String?
   telefone        String?
   consultas       Consulta[]    @relation("PacienteConsultas")
+
+  usuarioId       Int           @unique
+  usuario         Usuario       @relation(fields: [usuarioId], references: [id])
+
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
 
   @@map("pacientes")
 }
 
+
 model Medico {
   id              Int           @id @default(autoincrement())
-  nome            String
+  primeiroNome    String
+  ultimoSobrenome String
   especialidade   String
   crm             String        @unique
+  telefone        String?
   consultas       Consulta[]    @relation("MedicoConsultas")
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
 
   @@map("medicos")
 }
+
 
 model Consulta {
   id              Int           @id @default(autoincrement())
@@ -45,6 +78,9 @@ model Consulta {
 
   medico       Medico     @relation("MedicoConsultas", fields: [medicoId], references: [id])
   paciente     Paciente   @relation("PacienteConsultas", fields: [pacienteId], references: [id])
+
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
 
   @@map("consultas")
 }

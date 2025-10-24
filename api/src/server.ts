@@ -40,6 +40,6 @@ app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec))     // passa
 app.use("/", router);
 
 app.listen(port, () => {
-    console.log("-- A API subiu na porta ${port}")
+    console.log(`-- A API subiu na porta ${port}`)
     console.log(`-- Documentação do Swagger disponível em http://localhost:${port}/api-docs`);
 });
